@@ -1,6 +1,7 @@
 local M = {}
 local ns_id = vim.api.nvim_create_namespace("soluna_ghost_lines")
 local lint_ns = vim.api.nvim_create_namespace("soluna_linter")
+local current_job_id = nil
 
 M.defaults = {
 	linter_delay = 500,
@@ -109,6 +110,10 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 	local diagnostics = {}
 	local hl_result = M.config.highlight_groups.result
 	local hl_error = M.config.highlight_groups.error
+	if current_job_id then
+        vim.fn.jobstop(current_job_id)
+        current_job_id = nil
+    end
 	vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
 	vim.diagnostic.reset(lint_ns, buf)
 	vim.fn.jobstart({"soluna", "-e", content}, {
@@ -151,6 +156,7 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 			end
 		end,
 		on_exit = function()
+			current_job_id = nil
 			vim.diagnostic.set(lint_ns, buf, diagnostics)
 			if #stdout_output > 0 then
 				if output_mode == "buffer" then
