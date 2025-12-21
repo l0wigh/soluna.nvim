@@ -15,7 +15,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-    "~/projects/soluna.nvim", -- or "your-username/soluna.nvim"
+    "L0Wigh/soluna.nvim",
     ft = "luna", 
     config = function()
         require("soluna").setup({
@@ -38,3 +38,13 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
         })
     end,
 }
+```
+
+## Keybinds
+
+```lua
+local soluna = require("soluna")
+vim.keymap.set("n", "<leader>sf", soluna.evaluate_file)
+vim.keymap.set({"n", "v"}, "<leader>sl", soluna.evaluate_lines)
+vim.keymap.set("n", "<leader>sc", soluna.evaluate_clear)
+```
