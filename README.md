@@ -35,6 +35,9 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
                 result = "Comment",         -- Highlight group for ghost results
                 error = "DiagnosticError",  -- Highlight group for ghost errors
             }
+
+            -- Value to send when an input is asked
+            input_to_send = "default_nvim_input"
         })
     end,
 }
@@ -47,4 +50,5 @@ local soluna = require("soluna")
 vim.keymap.set("n", "<leader>sf", soluna.evaluate_file)
 vim.keymap.set({"n", "v"}, "<leader>sl", soluna.evaluate_lines)
 vim.keymap.set("n", "<leader>sc", soluna.evaluate_clear)
+vim.keymap.set("n", "<leader>ss", soluna.set_input_value)
 ```

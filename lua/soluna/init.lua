@@ -7,9 +7,10 @@ M.defaults = {
 	linter_delay = 500,
 	lint_on_change = true,
 	lint_on_save = true,
-	ghost_text_prefix = "󰈑 ",
-	error_prefix = "󰅚 ",
+	ghost_text_prefix = " 󰈑 ",
+	error_prefix = " 󰅚 ",
 	evaluatation_style = "ghost",
+	input_to_send = "default_nvim_input",
 	highlight_groups = {
 		result = "Comment",
 		error = "DiagnosticError",
@@ -157,7 +158,10 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 			end
 		end,
 		on_exit = function()
-			current_job_id = nil
+			if current_job_id then
+				vim.fn.jobstop(current_job_id)
+				current_job_id = nil
+			end
 			vim.diagnostic.set(lint_ns, buf, diagnostics)
 			if #stdout_output > 0 then
 				if output_mode == "buffer" then
@@ -185,6 +189,7 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 			end
 		end
 	})
+	vim.api.nvim_chan_send(current_job_id, M.config.input_to_send .. "\n")
 end
 
 function M.evaluate_file()
@@ -212,6 +217,11 @@ end
 function M.evaluate_clear()
 	local buf = vim.api.nvim_get_current_buf()
 	vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+end
+
+function M.set_input_value()
+	M.config.input_to_send = vim.fn.input("Soluna default input: ", M.config.input_to_send, "command")
+	M.evaluate_file()
 end
 
 return M
