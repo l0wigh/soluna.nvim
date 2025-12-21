@@ -6,8 +6,8 @@ M.defaults = {
 	linter_delay = 500,
 	lint_on_change = true,
 	lint_on_save = true,
-	ghost_text_prefix = "  󰈑 ",
-	error_prefix = "  󰅚 ",
+	ghost_text_prefix = "󰈑 ",
+	error_prefix = "󰅚 ",
 	evaluatation_style = "ghost",
 	highlight_groups = {
 		result = "Comment",
@@ -165,7 +165,7 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 					local safe_target = math.min(target - 1, line_count - 1)
 					if safe_target >= 0 then
 						local virt_lines = {}
-						if nl then table.insert(virt_lines, { { "", "" } }) end
+						if nl then table.insert(virt_lines, "\n") end
 						for _, text in ipairs(stdout_output) do
 							table.insert(virt_lines, { { M.config.ghost_text_prefix .. text, hl_result } })
 						end
@@ -183,7 +183,7 @@ end
 function M.evaluate_file()
 	local buf = vim.api.nvim_get_current_buf()
 	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-	local content = table.concat(lines, "\n")
+	local content = table.concat(lines, "")
 	local last_line = vim.api.nvim_buf_line_count(buf)
 	M.evaluate(buf, content, last_line, false, M.config.evaluation_style)
 end
@@ -197,7 +197,7 @@ function M.evaluate_lines()
 	end
 	local lines = vim.api.nvim_buf_get_lines(0, s_row - 1, e_row, false)
 	if #lines == 0 then return end
-	local content = table.concat(lines, "\n")
+	local content = table.concat(lines, "")
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "nx", false)
 	M.evaluate(buf, content, e_row, false, s_row - 1, M.config.evaluation_style)
 end
