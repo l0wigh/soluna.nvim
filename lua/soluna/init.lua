@@ -114,10 +114,11 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
         vim.fn.jobstop(current_job_id)
         current_job_id = nil
     end
+
 	vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
 	vim.diagnostic.reset(lint_ns, buf)
-	vim.fn.jobstart({"soluna", "-e", content}, {
-		stdout_buffered = true,
+	current_job_id = vim.fn.jobstart({"soluna", "-e", content}, {
+		stdout_buffered = false,
 		stderr_buffered = true,
 		on_stdout = function(_, data)
 			if data then
