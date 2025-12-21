@@ -1,0 +1,40 @@
+# soluna.nvim
+
+**soluna.nvim** is an interactive Neovim plugin designed for the [**Soluna** language](https://github.com/L0Wigh/Soluna). It provides a seamless development experience with a real-time linter and integrated code evaluation (via Ghost Text or a dedicated Output Buffer).
+
+## Features
+
+* **On-the-fly Linter**: Automatic syntax analysis as you type or upon saving.
+* **Ghost Text**: Displays results and errors directly below the relevant line without moving your cursor.
+* **Split Output**: A dedicated, automatic side-panel for full file execution results.
+* **Native Diagnostics**: Full integration with Neovim's diagnostic system (red underlines and sign column).
+
+## Installation
+
+Using [lazy.nvim](https://github.com/folke/lazy.nvim):
+
+```lua
+{
+    "~/projects/soluna.nvim", -- or "your-username/soluna.nvim"
+    ft = "luna", 
+    config = function()
+        require("soluna").setup({
+            -- Linter settings
+            linter_delay = 500,             -- Delay (ms) before automatic analysis triggers
+            lint_on_change = true,          -- Run linter while typing
+            lint_on_save = true,            -- Run linter on file save
+            ghost_text_prefix = "󰈑 ",       -- Icon prefix for stdout results
+            error_prefix = "󰅚 ",            -- Icon prefix for error messages
+            
+            -- Evaluation Behavior
+            evaluation_style = "ghost",     -- Default display mode ("ghost" or "buffer")
+            evaluation_buffer_width = 30,   -- Width of the right-side output panel
+            
+            -- Colors (Highlight Groups)
+            highlight_groups = {
+                result = "Comment",         -- Highlight group for ghost results
+                error = "DiagnosticError",  -- Highlight group for ghost errors
+            }
+        })
+    end,
+}
