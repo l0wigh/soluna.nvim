@@ -2,6 +2,10 @@
 
 **soluna.nvim** is an interactive Neovim plugin designed for the [**Soluna** language](https://github.com/L0Wigh/Soluna). It provides a seamless development experience with a real-time linter and integrated code evaluation (via Ghost Text or a dedicated Output Buffer).
 
+<p align="center" width="100%">
+    <img src="https://raw.githubusercontent.com/l0wigh/soluna.nvim/refs/heads/master/soluna.gif">
+</p>
+
 ## Features
 
 * **On-the-fly Linter**: Automatic syntax analysis as you type or upon saving.
