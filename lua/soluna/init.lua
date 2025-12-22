@@ -5,12 +5,13 @@ local current_job_id = nil
 
 M.defaults = {
 	linter_delay = 500,
-	lint_on_change = true,
+	lint_on_change = false,
 	lint_on_save = true,
 	ghost_text_prefix = " 󰈑 ",
 	error_prefix = " 󰅚 ",
-	evaluatation_style = "ghost",
+	evaluation_style = "ghost",
 	input_to_send = "default_nvim_input",
+	evaluation_buffer_height = 10,
 	highlight_groups = {
 		result = "Comment",
 		error = "DiagnosticError",
@@ -45,12 +46,12 @@ local function get_output_buffer()
     local win = vim.fn.bufwinid(output_buf)
     if win == -1 then
         vim.cmd("botright split")
+		vim.cmd("horizontal resize " .. M.config.evaluation_buffer_height)
         vim.api.nvim_win_set_buf(0, output_buf)
 		vim.wo.number = false
 		vim.wo.relativenumber = false
 		vim.wo.winfixwidth = true
 		vim.api.nvim_set_current_win(current_win)
-		vim.cmd("horizontal resize " .. (M.config.evaluatation_buffer_width or 30))
     end
     return output_buf
 end
@@ -73,7 +74,7 @@ function M.diagnostic_lint_on_the_fly()
 		local content = table.concat(lines, "\n")
 		vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
 		vim.diagnostic.reset(lint_ns, buf)
-		M.evaluate(buf, content, #lines, false, 0, M.config.evaluatation_style)
+		M.evaluate(buf, content, #lines, false, 0, M.config.evaluation_style)
 	end))
 end
 
@@ -118,7 +119,7 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 
 	vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
 	vim.diagnostic.reset(lint_ns, buf)
-	current_job_id = vim.fn.jobstart({"soluna", "-e", content}, {
+	current_job_id = vim.fn.jobstart({"soluna", "eval", content}, {
 		stdout_buffered = false,
 		stderr_buffered = true,
 		on_stdout = function(_, data)
@@ -204,7 +205,7 @@ function M.evaluate_file()
 	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 	local content = table.concat(lines, "")
 	local last_line = vim.api.nvim_buf_line_count(buf)
-	M.evaluate(buf, content, last_line, false, M.config.evaluation_style)
+	M.evaluate(buf, content, last_line, false, 0, M.config.evaluation_style)
 end
 
 function M.evaluate_lines()
