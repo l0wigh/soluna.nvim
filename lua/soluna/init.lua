@@ -85,7 +85,7 @@ function M.diagnostic_lint()
 			if not data then return end
 			for _, line in ipairs(data) do
 				local clean = strip_ansi(line)
-				local l, msg = clean:match("%[Soluna ERROR%].-%:(%d+)%s*->%s*(.*)")
+				local l, msg = clean_line:match("%[Soluna ERROR%]%s+.-:(%d+)%s*->%s*(.*)")
 				if l and msg then
 					table.insert(diagnostics, {
 						lnum = tonumber(l) - 1,
@@ -131,27 +131,34 @@ function M.evaluate(buf, content, target, nl, line_offset, output_mode)
 			end
 		end,
 		on_stderr = function(_, data)
-			if data then
-				for _, line in ipairs(data) do
-					local clean_line = strip_ansi(line)
-					local l, msg = clean_line:match("%[Soluna ERROR%].-%:(%d+)%s*->%s*(.*)")
+			if not data then return end
+			for _, line in ipairs(data) do
+				local clean_line = strip_ansi(line)
+				if clean_line ~= "" then
+					local l, msg = clean_line:match(":(%d+)%s*->%s*(.*)")
+					if not l then
+						l, msg = clean_line:match("ERROR.-:(%d+).-%s*(.*)")
+					end
 					if l and msg then
-						local actual_line = tonumber(l) - 1 + line_offset
-						local line_count = vim.api.nvim_buf_line_count(buf)
-						if actual_line >= 0 and actual_line < line_count then
-							table.insert(diagnostics, {
-								lnum = actual_line,
-								col = 0,
-								end_lnum = actual_line,
-								end_col = 999,
-								severity = vim.diagnostic.severity.ERROR,
-								message = msg,
-								source = "Soluna",
-							})
-							vim.api.nvim_buf_set_extmark(buf, ns_id, actual_line, 0, {
-								virt_lines = { { { M.config.error_prefix .. msg, hl_error } } },
-								virt_lines_above = false,
-							})
+						local line_num = tonumber(l)
+						local offset = tonumber(line_offset) or 0
+						local target_line = (line_num and line_num > 0) and (line_num - 1) or 0
+						local actual_line = target_line + offset
+						if vim.api.nvim_buf_is_valid(buf) then
+							local line_count = vim.api.nvim_buf_line_count(buf)
+							if line_count and actual_line >= 0 and actual_line < line_count then
+								table.insert(diagnostics, {
+									lnum = actual_line,
+									col = 0,
+									severity = vim.diagnostic.severity.ERROR,
+									message = msg,
+									source = "Soluna",
+								})
+								vim.api.nvim_buf_set_extmark(buf, ns_id, actual_line, 0, {
+									virt_lines = { { { M.config.error_prefix .. msg, hl_error } } },
+									virt_lines_above = false,
+								})
+							end
 						end
 					end
 				end
