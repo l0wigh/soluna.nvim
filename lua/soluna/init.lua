@@ -7,6 +7,7 @@ M.defaults = {
 	linter_delay = 500,
 	lint_on_change = false,
 	lint_on_save = true,
+	clear_on_insert = true,
 	ghost_text_prefix = " 󰈑 ",
 	error_prefix = " 󰅚 ",
 	evaluation_style = "ghost",
@@ -21,7 +22,7 @@ M.defaults = {
 function M.setup(user_config)
 	M.config = vim.tbl_deep_extend("force", M.defaults, user_config or {})
 	if M.config.lint_on_change then
-		vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+		vim.api.nvim_create_autocmd({ "TextChangedI" }, {
 			pattern = "*.luna",
 			callback = function() M.diagnostic_lint_on_the_fly() end,
 		})
@@ -30,6 +31,12 @@ function M.setup(user_config)
 		vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 			pattern = "*.luna",
 			callback = function() M.diagnostic_lint_on_the_fly() end,
+		})
+	end
+	if M.config.clear_on_insert then
+		vim.api.nvim_create_autocmd({ "InsertEnter" }, {
+			pattern = "*.luna",
+			callback = function() M.evaluate_clear() end,
 		})
 	end
 end
