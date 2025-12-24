@@ -25,6 +25,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
         require("soluna").setup({
             -- Linter settings
             linter_delay = 500,             -- Delay (ms) before automatic analysis triggers
+            eval_disabled_at_start = true,  -- If true, you'll need to use soluna.toggle_evaluation to enable auto-linter
             lint_on_change = true,          -- Run linter while typing
             lint_on_save = true,            -- Run linter on file save
             ghost_text_prefix = "󰈑 ",       -- Icon prefix for stdout results
@@ -55,4 +56,5 @@ vim.keymap.set("n", "<leader>sf", soluna.evaluate_file)
 vim.keymap.set({"n", "v"}, "<leader>sl", soluna.evaluate_lines)
 vim.keymap.set("n", "<leader>sc", soluna.evaluate_clear)
 vim.keymap.set("n", "<leader>ss", soluna.set_input_value)
+vim.keymap.set("n", "<leader>st", soluna.toggle_evaluation)
 ```
