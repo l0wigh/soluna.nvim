@@ -8,6 +8,7 @@ M.defaults = {
 	lint_on_change = false,
 	lint_on_save = true,
 	clear_on_insert = true,
+	eval_disabled_at_start = false,
 	ghost_text_prefix = " 󰈑 ",
 	error_prefix = " 󰅚 ",
 	evaluation_style = "ghost",
@@ -39,6 +40,9 @@ function M.setup(user_config)
 			callback = function() M.evaluate_clear() end,
 		})
 	end
+	vim.cmd [[
+		autocmd BufNewFile,BufRead *.luna setlocal commentstring=;\ %s 
+	]]
 end
 
 local output_buf = nil
@@ -73,44 +77,19 @@ end
 local lint_timer = vim.loop.new_timer()
 
 function M.diagnostic_lint_on_the_fly()
+	if M.config.eval_disabled_at_start == true then
+		return
+	end
 	local buf = vim.api.nvim_get_current_buf()
 	lint_timer:stop()
 	lint_timer:start(M.config.linter_delay, 0, vim.schedule_wrap(function()
 		if not vim.api.nvim_buf_is_valid(buf) then return end
 		local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-		local content = table.concat(lines, "\n")
+		local content = table.concat(lines, "")
 		vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
 		vim.diagnostic.reset(lint_ns, buf)
 		M.evaluate(buf, content, #lines, false, 0, M.config.evaluation_style)
 	end))
-end
-
-function M.diagnostic_lint()
-	local buf = vim.api.nvim_get_current_buf()
-	local diagnostics = {}
-	vim.fn.jobstart({"soluna", vim.api.nvim_buf_get_name(buf)}, {
-		on_stderr = function(_, data)
-			if not data then return end
-			for _, line in ipairs(data) do
-				local clean = strip_ansi(line)
-				local l, msg = clean_line:match("%[Soluna ERROR%]%s+.-:(%d+)%s*->%s*(.*)")
-				if l and msg then
-					table.insert(diagnostics, {
-						lnum = tonumber(l) - 1,
-						col = 0,
-						end_lnum = tonumber(l) - 1,
-						end_col = 999,
-						severity = vim.diagnostic.severity.ERROR,
-						message = msg,
-						source = "Soluna",
-					})
-				end
-			end
-		end,
-		on_exit = function()
-			vim.diagnostic.set(lint_ns, buf, diagnostics)
-		end
-	})
 end
 
 function M.evaluate(buf, content, target, nl, line_offset, output_mode)
@@ -237,6 +216,11 @@ end
 function M.set_input_value()
 	M.config.input_to_send = vim.fn.input("Soluna default input: ", M.config.input_to_send, "command")
 	M.evaluate_file()
+end
+
+function M.toggle_evaluation()
+	M.config.eval_disabled_at_start = not M.config.eval_disabled_at_start
+	M.evaluate_clear()
 end
 
 return M
